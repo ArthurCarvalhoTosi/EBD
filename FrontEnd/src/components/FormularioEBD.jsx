@@ -33,15 +33,15 @@ const FormularioEBD = () => {
       try {
         setResultado(prev => [...prev, { cpf, status: 'enviando', mensagem: 'Enviando...' }]);
 
-        const sucesso = await enviarResposta({ cpf, resposta, email, telefone, cidade, estado });
-
+        const result = await enviarResposta({ cpf, resposta, email, telefone, cidade, estado });
+        
         setResultado(prev =>
           prev.map(item =>
             item.cpf === cpf
               ? {
                   ...item,
-                  status: sucesso ? 'sucesso' : 'erro',
-                  mensagem: sucesso ? 'Enviado com sucesso!' : 'Falha no envio.',
+                  status: result?.sucesso ? 'sucesso' : 'erro',
+                  mensagem: result?.sucesso ? 'Enviado com sucesso!' : result?.erro || 'Erro ao enviar respostas',
                 }
               : item
           )
