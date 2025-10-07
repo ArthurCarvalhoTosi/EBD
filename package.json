@@ -1,0 +1,71 @@
+{
+  "name": "ebd-app",
+  "version": "1.0.0",
+  "description": "Aplicação EBD - Resposta Automática",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "npm run build:frontend && npm run copy:backend",
+    "build:frontend": "cd FrontEnd && npm run build && cd .. && xcopy FrontEnd\\build build\\ /E /I /Y",
+    "copy:backend": "node scripts/copy-backend.js",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "package:win": "npm run build && electron-packager . EBD-Resposta-Automatica --platform=win32 --arch=x64 --out=dist --overwrite --ignore=\"FrontEnd/(?!build)\" --ignore=\"BackEnd\" && node scripts/create-portable.js",
+    "package:linux": "npm run build && electron-packager . EBD-Resposta-Automatica --platform=linux --arch=x64 --out=dist --overwrite",
+    "dev": "concurrently \"cd FrontEnd && npm start\" \"wait-on http://localhost:3000 && NODE_ENV=development electron .\"",
+    "postinstall": "cd FrontEnd && npm install && cd ../BackEnd && npm install"
+  },
+  "build": {
+    "appId": "com.ebd.resposta-automatica",
+    "productName": "EBD Resposta Automática",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "build/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": ["x64"]
+        },
+        {
+          "target": "dir",
+          "arch": ["x64"]
+        }
+      ],
+      "verifyUpdateCodeSignature": false,
+      "publisherName": false,
+      "sign": false
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "portable": {
+      "artifactName": "EBD-Resposta-Automatica-Portable.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4",
+    "electron-packager": "^17.1.1",
+    "concurrently": "^8.2.2",
+    "wait-on": "^7.0.1"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "cors": "^2.8.5",
+    "puppeteer": "^24.6.1"
+  },
+  "author": "",
+  "license": "ISC"
+}
