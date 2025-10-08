@@ -48,6 +48,10 @@ function createWindow() {
       console.error('Arquivo não encontrado:', buildPath);
       dialog.showErrorBox('Erro', 'Arquivo de interface não encontrado: ' + buildPath);
     }
+    
+    // Abrir DevTools automaticamente em produção (útil para debug)
+    // Descomente a linha abaixo se quiser que o DevTools abra automaticamente
+    // mainWindow.webContents.openDevTools();
   }
 
   mainWindow.once('ready-to-show', () => {
