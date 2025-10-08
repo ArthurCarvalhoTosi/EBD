@@ -13,7 +13,7 @@
     "dist:linux": "npm run build && electron-builder --linux",
     "package:win": "npm run build && electron-packager . EBD-Resposta-Automatica --platform=win32 --arch=x64 --out=dist --overwrite --ignore=\"FrontEnd/(?!build)\" --ignore=\"BackEnd\" && node scripts/create-portable.js",
     "package:linux": "npm run build && electron-packager . EBD-Resposta-Automatica --platform=linux --arch=x64 --out=dist --overwrite",
-    "dev": "concurrently \"cd FrontEnd && npm start\" \"wait-on http://localhost:3000 && NODE_ENV=development electron .\"",
+    "dev": "concurrently \"cd BackEnd && node index.js\" \"cd FrontEnd && npm start\" \"wait-on http://localhost:3000 && wait-on http://localhost:4000 && set NODE_ENV=development && electron .\"",
     "postinstall": "cd FrontEnd && npm install && cd ../BackEnd && npm install"
   },
   "build": {
@@ -25,8 +25,14 @@
     "files": [
       "main.js",
       "build/**/*",
-      "node_modules/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/**/*",
+      "node_modules/express/**/*",
+      "node_modules/cors/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/puppeteer/**/*",
+      "node_modules/puppeteer-core/**/*"
     ],
     "win": {
       "target": [

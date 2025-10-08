@@ -3,6 +3,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 
 let mainWindow;
 let backendProcess;
@@ -36,7 +37,17 @@ function createWindow() {
     // Em produção, usar os arquivos buildados
     const buildPath = path.join(__dirname, 'build', 'index.html');
     console.log('Tentando carregar:', buildPath);
-    mainWindow.loadFile(buildPath);
+    
+    // Verificar se o arquivo existe
+    if (fs.existsSync(buildPath)) {
+      mainWindow.loadFile(buildPath).catch(err => {
+        console.error('Erro ao carregar o arquivo:', err);
+        dialog.showErrorBox('Erro', 'Não foi possível carregar a interface. Verifique se o build foi feito corretamente.');
+      });
+    } else {
+      console.error('Arquivo não encontrado:', buildPath);
+      dialog.showErrorBox('Erro', 'Arquivo de interface não encontrado: ' + buildPath);
+    }
   }
 
   mainWindow.once('ready-to-show', () => {
@@ -58,17 +69,34 @@ function startBackend() {
       backendApp.use(express.json());
 
       // Importar a lógica do backend
+      // Configurar o caminho do Puppeteer para funcionar com asar
       const puppeteer = require('puppeteer');
+      const isPacked = app.isPackaged;
+      
+      let puppeteerConfig = {
+        headless: true,
+        defaultViewport: null,
+        args: ["--start-maximized", "--no-sandbox", "--disable-setuid-sandbox"],
+      };
+      
+      // Se estiver empacotado, configurar o caminho do Chrome
+      if (isPacked) {
+        // Puppeteer instalado via npm já vem com o Chrome, mas quando empacotado
+        // precisa ser extraído do asar
+        const puppeteerPath = path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', 'puppeteer');
+        try {
+          const browserFetcher = puppeteer.createBrowserFetcher({ path: puppeteerPath });
+          // Usar o Chrome que vem com o Puppeteer
+        } catch (e) {
+          console.warn('Erro ao configurar Puppeteer:', e);
+        }
+      }
 
       backendApp.post("/enviar-resposta", async (req, res) => {
         const { cpf, resposta, email, telefone, cidade, estado } = req.body;
 
         try {
-          const browser = await puppeteer.launch({
-            headless: true,
-            defaultViewport: null,
-            args: ["--start-maximized"],
-          });
+          const browser = await puppeteer.launch(puppeteerConfig);
           const page = await browser.newPage();
 
           await page.goto(
@@ -246,14 +274,17 @@ function startBackend() {
 // Eventos do aplicativo
 app.whenReady().then(async () => {
   try {
-    // Iniciar o backend
-    await startBackend();
+    const isDev = process.env.NODE_ENV === 'development';
     
-    // Aguardar um pouco para o backend iniciar completamente
-    setTimeout(() => {
-      // Criar a janela principal
-      createWindow();
-    }, 2000);
+    // Iniciar o backend apenas em produção (em dev ele é iniciado separadamente)
+    if (!isDev) {
+      await startBackend();
+      // Aguardar um pouco para o backend iniciar completamente
+      await new Promise(resolve => setTimeout(resolve, 2000));
+    }
+    
+    // Criar a janela principal
+    createWindow();
 
   } catch (error) {
     console.error('Erro ao iniciar a aplicação:', error);
