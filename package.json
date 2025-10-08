@@ -8,6 +8,9 @@
     "build": "npm run build:frontend && npm run copy:backend",
     "build:frontend": "cd FrontEnd && npm run build && cd .. && xcopy FrontEnd\\build build\\ /E /I /Y",
     "copy:backend": "node scripts/copy-backend.js",
+    "clean": "powershell -ExecutionPolicy Bypass -File scripts/limpar-dist.ps1",
+    "clean:all": "npm run clean && rmdir /s /q build 2>nul || echo Build limpo",
+    "rebuild": "npm run clean:all && npm run dist:win",
     "dist": "npm run build && electron-builder",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",
@@ -26,9 +29,8 @@
       "main.js",
       "build/**/*",
       "package.json",
-      "!node_modules/**/*",
-      "node_modules/express/**/*",
-      "node_modules/cors/**/*"
+      "node_modules/**/*",
+      "!node_modules/puppeteer/.local-chromium/**/*"
     ],
     "asarUnpack": [
       "node_modules/puppeteer/**/*",

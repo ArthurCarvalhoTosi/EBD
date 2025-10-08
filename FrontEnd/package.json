@@ -2,6 +2,7 @@
   "name": "ebd-resposta-automatica",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
     "antd": "^5.24.6",
     "express": "^5.1.0",

@@ -51,7 +51,7 @@ function createWindow() {
     
     // Abrir DevTools automaticamente em produção (útil para debug)
     // Descomente a linha abaixo se quiser que o DevTools abra automaticamente
-    // mainWindow.webContents.openDevTools();
+    mainWindow.webContents.openDevTools();
   }
 
   mainWindow.once('ready-to-show', () => {
